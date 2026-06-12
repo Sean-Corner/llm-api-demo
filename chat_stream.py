@@ -61,8 +61,13 @@ def stream_chat(client: OpenAI, model: str, messages: list[dict[str, str]]) -> s
     full_reply = ""
 
     for chunk in stream:
+        # 某些流式事件可能不包含 choices（例如 keep-alive 或 provider 元数据）。
+        if not chunk.choices:
+            continue
+
         delta = chunk.choices[0].delta.content
 
+        # role 更新、tool 调用或结束事件时 content 可能为 None。
         if delta:
             print(delta, end="", flush=True)
             full_reply += delta
